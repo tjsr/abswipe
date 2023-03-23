@@ -1,0 +1,1 @@
+export { DualSwiper, SwipableBox } from './components';
