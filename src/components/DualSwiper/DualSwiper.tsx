@@ -4,7 +4,7 @@ import { SelectionAction, SwipeDirection, SwiperSharedProps } from '../../types'
 import { SwipableBox } from '../SwipableBox/SwipableBox';
 import { useRef } from 'react';
 
-interface DualSwiperProps extends SwiperSharedProps {
+export interface DualSwiperProps extends SwiperSharedProps {
   children: React.ReactNode;
   itemSelected: (side: SwipeDirection, action: SelectionAction) => void;
   leftContent: React.ReactNode;
@@ -12,22 +12,22 @@ interface DualSwiperProps extends SwiperSharedProps {
 }
 
 export const DualSwiper = (props: DualSwiperProps): JSX.Element => {
+  const dragoverRef = useRef<HTMLDivElement | null>(null);
+
   const sharedProps: SwiperSharedProps = {
     boxMinHeight: props.boxMinHeight,
     boxMinWidth: props.boxMinWidth,
     maxRotationDegrees: props.maxRotationDegrees,
     maxRotationDistance: props.maxRotationDistance,
     moveDistanceBeforeRotate: props.moveDistanceBeforeRotate,
-    selectGlowColor: props.selectGlowColor,
     selectBackgroundColor: props.selectBackgroundColor,
+    selectGlowColor: props.selectGlowColor,
     selectGrowScale: props.selectGrowScale,
     swipeDelay: props.swipeDelay,
     swipeDistance: props.swipeDistance,
     swipeDuration: props.swipeDuration,
     swipeThreshold: props.swipeThreshold,
   };
-
-  const dragoverRef = useRef<HTMLDivElement | null>(null);
 
   const leftSwiped = (direction: SwipeDirection) => {
     if (direction === SwipeDirection.LEFT) {

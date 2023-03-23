@@ -7,12 +7,12 @@ export type Color = RGB | RGBA | HEX;
 export enum SwipeDirection {
   LEFT,
   RIGHT,
-};
+}
 
 export enum SelectionAction {
   SWIPE,
   SELECT
-};
+}
 
 export interface SwiperSharedProps {
   boxMinHeight?: number;
@@ -27,4 +27,4 @@ export interface SwiperSharedProps {
   swipeDistance?: number;
   swipeDuration?: number;
   swipeThreshold?: number;
-};
+}

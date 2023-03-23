@@ -1,12 +1,17 @@
 {
-  "name": "abswipe",
-  "version": "0.1.0",
+  "name": "@tjsr/abswipe",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/tjsr"
+  },
+  "version": "0.1.1",
   "description": "An A/B React Swipe UI Component",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "rollup": "rollup -c"
+    "rollup": "rollup -c",
+    "lint": "eslint \"./src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint --fix \"./src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@react-spring/web": "^9.7.1",
@@ -63,9 +68,16 @@
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^11.0.0",
     "@types/styled-components": "^5.1.26",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
+    "eslint": "^8.36.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "jest-environment-jsdom": "^29.5.0",
     "rollup": "^3.20.1",
     "rollup-plugin-dts": "^5.3.0",
+    "rollup-plugin-postcss": "^4.0.2",
     "tslib": "^2.5.0"
   },
   "main": "dist/cjs/index.js",

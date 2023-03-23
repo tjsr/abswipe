@@ -32,7 +32,7 @@ export const SwipableBox = ({
   boxMinHeight,
   boxMinWidth,
 }: SwipableBoxProps): JSX.Element => {
-  const [{ x, y, scale, rotate }, api] = useSpring(() => ({ x: 0, y: 0, scale: 1, rotate: '0deg' }));
+  const [{ x, y, scale, rotate }, api] = useSpring(() => ({ rotate: '0deg', scale: 1, x: 0, y: 0 }));
   const divRef = useRef<HTMLDivElement | null>(null);
 
   const sharedOptions = {
@@ -40,9 +40,9 @@ export const SwipableBox = ({
   };
 
   const dragOptions = {
-    threshold: swipeThreshold,
-    swipe: { distance: swipeDistance, duration: swipeDuration },
     delay: swipeDelay,
+    swipe: { distance: swipeDistance, duration: swipeDuration },
+    threshold: swipeThreshold,
   };
 
   const scaleSizeTo = (value: number, minScale: number, maxScale: number, minX: number, maxX: number): number => {
@@ -102,11 +102,11 @@ export const SwipableBox = ({
   const bindDragHandler = useDrag(
     ({ event, down, movement: [mx, my], swipe: [swipeX] }) => {
       api.start({
+        immediate: down,
+        rotate: getRotationDegrees(down ? mx : 0, maxRotationDegrees),
+        scale: down ? scaleSizeTo(mx, 1.0, selectGrowScale, moveDistanceBeforeRotate, maxRotationDistance) : 1.0,
         x: down ? mx : 0,
         y: down ? my : 0,
-        immediate: down,
-        scale: down ? scaleSizeTo(mx, 1.0, selectGrowScale, moveDistanceBeforeRotate, maxRotationDistance) : 1.0,
-        rotate: getRotationDegrees(down ? mx : 0, maxRotationDegrees),
       });
       if (!down) {
         removeGlow(divRef);
@@ -145,7 +145,7 @@ export const SwipableBox = ({
   );
 
   return (
-    <animated.div ref={divRef} {...bindDragHandler()} style={{ x, y, scale, touchAction: 'none', rotate }}>
+    <animated.div ref={divRef} {...bindDragHandler()} style={{ rotate, scale, touchAction: 'none', x, y }}>
       <SwipableBoxContent boxMinHeight={boxMinHeight} boxMinWidth={boxMinWidth}>
         {children}
       </SwipableBoxContent>
