@@ -1,7 +1,8 @@
 import { DualSwiperBox, TargetDropArea } from './DualSwiper.styles';
-import { SelectionAction, SwipeDirection, SwiperSharedProps } from '../../types';
+import { SwipableBox, SwipeDirection } from '../SwipableBox';
 
-import { SwipableBox } from '../SwipableBox/SwipableBox';
+import { SelectionAction } from './types';
+import { SwiperSharedProps } from '../';
 import { useRef } from 'react';
 
 export interface DualSwiperProps extends SwiperSharedProps {

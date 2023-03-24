@@ -1,4 +1,4 @@
-import { SelectionAction, SwipeDirection } from './types';
+import { SelectionAction, SwipeDirection } from './components';
 
 import { DualSwiper } from './components/DualSwiper/DualSwiper';
 import React from 'react';

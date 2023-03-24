@@ -1,17 +1,18 @@
 import { MutableRefObject, useRef } from 'react';
-import { SwipeDirection, SwiperSharedProps } from '../../types';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag, useGesture } from '@use-gesture/react';
 
 import { SwipableBoxContent } from './SwipableBox.styles';
+import { SwipeDirection } from './types';
+import { SwiperSharedProps } from '../index';
 
 export interface SwipableBoxProps extends SwiperSharedProps {
   boxMinHeight?: number;
   boxMinWidth?: number;
   children: React.ReactNode;
-  dropArea: MutableRefObject<HTMLDivElement | null>;
+  dropArea?: MutableRefObject<HTMLDivElement | null>;
   itemSelected: () => void;
-  itemSwiped: (direction: SwipeDirection) => void;
+  itemSwiped?: (direction: SwipeDirection) => void;
 }
 
 export const SwipableBox = ({
@@ -34,6 +35,12 @@ export const SwipableBox = ({
 }: SwipableBoxProps): JSX.Element => {
   const [{ x, y, scale, rotate }, api] = useSpring(() => ({ rotate: '0deg', scale: 1, x: 0, y: 0 }));
   const divRef = useRef<HTMLDivElement | null>(null);
+  const [{ rotate, scale, x, y }, api] = useSpring(() => ({
+    rotate: '0deg',
+    scale: 1,
+    x: 0,
+    y: 0,
+  }));
 
   const sharedOptions = {
     enabled: true,
@@ -44,6 +51,57 @@ export const SwipableBox = ({
     swipe: { distance: swipeDistance, duration: swipeDuration },
     threshold: swipeThreshold,
   };
+
+  // Set the drag hook and define component movement based on gesture data
+  const bindDragHandler = useDrag(
+    ({ event, down, movement: [mx, my], swipe: [swipeX] }) => {
+      api.start({
+        immediate: down,
+        rotate: getRotationDegrees(down ? mx : 0, maxRotationDegrees),
+        scale: down ? scaleSizeTo(mx, 1.0, selectGrowScale, moveDistanceBeforeRotate, maxRotationDistance) : 1.0,
+        x: down ? mx : 0,
+        y: down ? my : 0,
+      });
+      if (!down && divRef) {
+        removeGlow(divRef);
+      }
+      if ((event.type === 'pointermove' || event.type === 'pointerup') && dropArea) {
+        const pointerEvent = event as PointerEvent;
+        const x = pointerEvent.clientX;
+        const y = pointerEvent.clientY;
+        const boundingRects = dropArea.current?.getBoundingClientRect();
+        if (cursorIntersectsPosition(x, y, boundingRects)) {
+          if (down && divRef) {
+            makeGlow(divRef);
+          }
+          if (!down) {
+            itemSelected();
+          }
+        } else if (divRef) {
+          removeGlow(divRef);
+        }
+      }
+
+      if (swipeX !== 0) {
+        if (!itemSwiped) {
+          itemSelected();
+        } else {
+          itemSwiped(swipeX === -1 ? SwipeDirection.LEFT : SwipeDirection.RIGHT);
+        }
+      }
+    },
+    { ...sharedOptions, ...dragOptions }
+  );
+
+  useGesture(
+    {},
+    {
+      // global options such as `target`
+      ...sharedOptions,
+      // gesture specific options
+      drag: dragOptions,
+    }
+  );
 
   const scaleSizeTo = (value: number, minScale: number, maxScale: number, minX: number, maxX: number): number => {
     let offset = value;
@@ -97,52 +155,6 @@ export const SwipableBox = ({
       ref.current.style.backgroundColor = '';
     }
   };
-
-  // Set the drag hook and define component movement based on gesture data
-  const bindDragHandler = useDrag(
-    ({ event, down, movement: [mx, my], swipe: [swipeX] }) => {
-      api.start({
-        immediate: down,
-        rotate: getRotationDegrees(down ? mx : 0, maxRotationDegrees),
-        scale: down ? scaleSizeTo(mx, 1.0, selectGrowScale, moveDistanceBeforeRotate, maxRotationDistance) : 1.0,
-        x: down ? mx : 0,
-        y: down ? my : 0,
-      });
-      if (!down) {
-        removeGlow(divRef);
-      }
-      if (event.type === 'pointermove' || event.type === 'pointerup') {
-        const pointerEvent = event as PointerEvent;
-        const x = pointerEvent.clientX;
-        const y = pointerEvent.clientY;
-        const boundingRects = dropArea.current?.getBoundingClientRect();
-        if (cursorIntersectsPosition(x, y, boundingRects)) {
-          if (down) {
-            makeGlow(divRef);
-          } else {
-            itemSelected();
-          }
-        } else {
-          removeGlow(divRef);
-        }
-      }
-
-      if (swipeX !== 0) {
-        itemSwiped(swipeX === -1 ? SwipeDirection.LEFT : SwipeDirection.RIGHT);
-      }
-    },
-    { ...sharedOptions, ...dragOptions }
-  );
-
-  useGesture(
-    {},
-    {
-      // global options such as `target`
-      ...sharedOptions,
-      // gesture specific options
-      drag: dragOptions,
-    }
-  );
 
   return (
     <animated.div ref={divRef} {...bindDragHandler()} style={{ rotate, scale, touchAction: 'none', x, y }}>
