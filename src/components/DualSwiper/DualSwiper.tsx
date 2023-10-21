@@ -1,9 +1,10 @@
 import { DualSwiperBox, TargetDropArea } from './DualSwiper.styles';
+import React, { useRef } from 'react';
 import { SwipableBox, SwipeDirection } from '../SwipableBox';
 
+import { DragDirection } from '../SwipableBox/types';
 import { SelectionAction } from './types';
 import { SwiperSharedProps } from '../';
-import { useRef } from 'react';
 
 export interface DualSwiperProps extends SwiperSharedProps {
   children: React.ReactNode;
@@ -57,11 +58,23 @@ export const DualSwiper = (props: DualSwiperProps): JSX.Element => {
   return (
     <>
       <DualSwiperBox>
-        <SwipableBox dropArea={dragoverRef} itemSelected={leftSelected} itemSwiped={leftSwiped} {...sharedProps}>
+        <SwipableBox
+          targetDragDirection={DragDirection.RIGHT}
+          dropArea={dragoverRef}
+          itemSelected={leftSelected}
+          itemSwiped={leftSwiped}
+          {...sharedProps}
+        >
           {props.leftContent}
         </SwipableBox>
         <TargetDropArea ref={dragoverRef}>{props.children}</TargetDropArea>
-        <SwipableBox dropArea={dragoverRef} itemSelected={rightSelected} itemSwiped={rightSwiped} {...sharedProps}>
+        <SwipableBox
+          targetDragDirection={DragDirection.LEFT}
+          dropArea={dragoverRef}
+          itemSelected={rightSelected}
+          itemSwiped={rightSwiped}
+          {...sharedProps}
+        >
           {props.rightContent}
         </SwipableBox>
       </DualSwiperBox>

@@ -1,9 +1,9 @@
-import { MutableRefObject, useRef } from 'react';
+import { DragDirection, SwipeDirection } from './types';
+import React, { MutableRefObject, useRef } from 'react';
 import { animated, useSpring } from '@react-spring/web';
 import { useDrag, useGesture } from '@use-gesture/react';
 
 import { SwipableBoxContent } from './SwipableBox.styles';
-import { SwipeDirection } from './types';
 import { SwiperSharedProps } from '../index';
 
 export interface SwipableBoxProps extends SwiperSharedProps {
@@ -13,6 +13,7 @@ export interface SwipableBoxProps extends SwiperSharedProps {
   dropArea?: MutableRefObject<HTMLDivElement | null>;
   itemSelected: () => void;
   itemSwiped?: (direction: SwipeDirection) => void;
+  targetDragDirection: DragDirection;
 }
 
 export const SwipableBox = ({
@@ -32,9 +33,11 @@ export const SwipableBox = ({
   swipeThreshold = 50,
   boxMinHeight,
   boxMinWidth,
+  targetDragDirection = DragDirection.RIGHT,
 }: SwipableBoxProps): JSX.Element => {
-  const [{ x, y, scale, rotate }, api] = useSpring(() => ({ rotate: '0deg', scale: 1, x: 0, y: 0 }));
   const divRef = useRef<HTMLDivElement | null>(null);
+  // const divRef = forwardRef<HTMLDivElement | null>({}, {});
+  // const divRef: MutableRefObject<HTMLDivElement | null> | null = null;
   const [{ rotate, scale, x, y }, api] = useSpring(() => ({
     rotate: '0deg',
     scale: 1,
@@ -67,10 +70,11 @@ export const SwipableBox = ({
       }
       if ((event.type === 'pointermove' || event.type === 'pointerup') && dropArea) {
         const pointerEvent = event as PointerEvent;
-        const x = pointerEvent.clientX;
-        const y = pointerEvent.clientY;
-        const boundingRects = dropArea.current?.getBoundingClientRect();
-        if (cursorIntersectsPosition(x, y, boundingRects)) {
+        const targetDropRects = dropArea.current?.getBoundingClientRect();
+        if (
+          isDraggedInDirection(targetDragDirection, mx) ||
+          (targetDropRects && intersectsDropArea(pointerEvent, targetDropRects))
+        ) {
           if (down && divRef) {
             makeGlow(divRef);
           }
@@ -86,7 +90,7 @@ export const SwipableBox = ({
         if (!itemSwiped) {
           itemSelected();
         } else {
-          itemSwiped(swipeX === -1 ? SwipeDirection.LEFT : SwipeDirection.RIGHT);
+          itemSwiped(getSwipeDirection(swipeX));
         }
       }
     },
@@ -133,11 +137,26 @@ export const SwipableBox = ({
     return `${angle}deg`;
   };
 
-  const cursorIntersectsPosition = (x: number, y: number, rect: DOMRect | undefined): boolean => {
-    if (!rect) {
-      return false;
+  const cursorIntersectsX = (x: number, rect: DOMRect): boolean => x > rect.left && x < rect.right;
+
+  const isDraggedInDirection = (targetDirection: DragDirection, mx: number): boolean => {
+    const draggedDirection = getDragDirection(mx);
+    const totalMovement = Math.abs(mx);
+    return draggedDirection === targetDirection && totalMovement > swipeThreshold;
+  };
+
+  const getSwipeDirection = (swipeX: number): SwipeDirection =>
+    swipeX === -1 ? SwipeDirection.LEFT : SwipeDirection.RIGHT;
+
+  const getDragDirection = (mx: number): DragDirection => (mx < 0 ? DragDirection.LEFT : DragDirection.RIGHT);
+
+  const intersectsDropArea = (pointerEvent: PointerEvent, targetDropRects: DOMRect): boolean => {
+    const cursorX = pointerEvent.clientX;
+    if (cursorIntersectsX(cursorX, targetDropRects)) {
+      return true;
     }
-    return x > rect.left && x < rect.right && y > rect.top && y < rect.bottom;
+
+    return false;
   };
 
   const makeGlow = (ref: MutableRefObject<HTMLDivElement | null>): void => {
@@ -149,7 +168,10 @@ export const SwipableBox = ({
     }
   };
 
-  const removeGlow = (ref: MutableRefObject<HTMLDivElement | null>): void => {
+  type RefType = MutableRefObject<HTMLDivElement | null>;
+  // type RefType = React.ForwardRefExoticComponent<React.RefAttributes<HTMLDivElement | null>>;
+
+  const removeGlow = (ref: RefType): void => {
     if (ref && ref.current) {
       ref.current.style.boxShadow = '';
       ref.current.style.backgroundColor = '';
