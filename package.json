@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/tjsr"
   },
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "An A/B React Swipe UI Component",
   "scripts": {
     "start": "react-scripts start",
