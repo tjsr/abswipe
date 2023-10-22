@@ -1,6 +1,6 @@
 {
   "name": "@tjsrowe/abswipe",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "An A/B React Swipe UI Component",
   "scripts": {
     "start": "react-scripts start",
