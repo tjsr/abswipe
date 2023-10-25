@@ -6,6 +6,7 @@ import { Swiper } from './Swiper';
 import reportWebVitals from './reportWebVitals';
 
 export const doRender = () => {
+  console.log('Rendering Swiper example');
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
   root.render(
     <React.StrictMode>
